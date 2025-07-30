@@ -104,7 +104,7 @@ cycle_factorization(cycle:[First|Rest]) -->
     cycle_front_factorization(Rest, First).
 cycle_front_factorization([], _) --> [].
 cycle_front_factorization([A|Rest], First) -->
-    [cycle:[First, A]],
+    [swap(First, A)],
     cycle_front_factorization(Rest, First).
 
 
