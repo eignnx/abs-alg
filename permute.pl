@@ -9,16 +9,17 @@ is_permutation(perm:Xs) :-
     phrase(indices(_), Is),
     phrase(permutation(Is), Xs).
 
-portray(perm:Xs) :-
-    is_list(Xs),
-    length(Xs, N),
-    format("~n/"),
-    phrase(indices(N), Is),
+portray(perm:[X|Xs]) :-
+    length([X|Xs], N),
+    format("~n⎛"),
+    phrase(indices(N), [I|Is]),
+    format("~p", [I]),
     maplist([X]>>format(" ~p", [X]), Is),
-    format(" \\~n"),
-    format("\\"),
+    format("⎞~n"),
+    format("⎝"),
+    format("~p", [X]),
     maplist([X]>>format(" ~p", [X]), Xs),
-    format(" /~n").
+    format("⎠").
 
 
 :- multifile group_element/2.
