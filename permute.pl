@@ -55,27 +55,29 @@ permutation_from_to(perm:P, From, To) :- nth1(From, P, To).
 
 permutation_cycle_decomposition(perm:P, Decomp) :-
     max_list(P, Front),
-    work_front_current_perm_cycles(P, Front, Front, P, Decomp).
+    phrase(work_front_current_perm_cycles(P, Front, Front, P), Decomp0),
+    exclude([cycle:[_]]>>true, Decomp0, Decomp1),
+    % Guarunteed to be disjoint, so cycles commute:
+    sort(0, @>=, Decomp1, Decomp).
 
-work_front_current_perm_cycles([], _Front, _Current, _Perm, []).
-work_front_current_perm_cycles(Work0, Front, Current, Perm, [cycle:Cycle|Cycles]) :-
-    phrase(cycle_till_front(Front, Current, Perm, Work0, Work), Cycle),
-    ( max_list(Work, NewFront) ->
-        work_front_current_perm_cycles(Work, NewFront, NewFront, Perm, Cycles)
-    ;
-        Cycles = []
+work_front_current_perm_cycles([], _Front, _Current, _Perm) --> [].
+work_front_current_perm_cycles(Work0, Front, Current, Perm) -->
+    { phrase(cycle_till_front(Front, Current, Perm, Work0, Work), Cycle) },
+    [cycle:Cycle],
+    (   { max_list(Work, NewFront) }
+    ->  work_front_current_perm_cycles(Work, NewFront, NewFront, Perm)
+    ;   []
     ).
 
 cycle_till_front(Front, Current, Perm, Work0, Work) -->
     { permutation_from_to(perm:Perm, Current, Next) },
     [Current],
     { selectchk(Current, Work0, Work1) },
-    ( { dif(Next, Front) } ->
-        cycle_till_front(Front, Next, Perm, Work1, Work)
-    ;
-        { Work = Work1 },
-        []
-    ).
+    cycle_till_front_follow(Front, Next, Perm, Work1, Work).
+
+cycle_till_front_follow(Front, Front, _, Work, Work) --> !.
+cycle_till_front_follow(Front, Next, Perm, Work0, Work) -->
+    cycle_till_front(Front, Next, Perm, Work0, Work).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
