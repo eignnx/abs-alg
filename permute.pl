@@ -1,5 +1,16 @@
-:- use_module(library(clpfd)).
+:- module(permute, [
+    group_title/2,
+    group_element/2,
+    group_identity/2,
+    group_inverse/3,
+    group_operator/4
+]).
+
 :- encoding(utf8).
+
+:- use_module(library(clpfd)).
+:- use_module(groups).
+
 
 cycle(cycle:[]).
 cycle(cycle:[X | Xs]) :- X in 1..sup, cycle(cycle:Xs).
@@ -9,7 +20,10 @@ is_permutation(perm:Xs) :-
     phrase(indices(_), Is),
     phrase(permutation(Is), Xs).
 
-portray(perm:[X|Xs]) :-
+groups:group_title(s(N), Title) :-
+    format(string(Title), "the symmetric group on sets of ~d elements", [N]).
+
+user:portray(perm:[X|Xs]) :-
     length([X|Xs], N),
     format("~n⎛"),
     phrase(indices(N), [I|Is]),
@@ -19,26 +33,41 @@ portray(perm:[X|Xs]) :-
     format("⎝"),
     format("~p", [X]),
     maplist([X]>>format(" ~p", [X]), Xs),
-    format("⎠").
+    format("⎠"),
+    flush_output(user_output).
+
+user:portray(cycle:Xs) :-
+    is_list(Xs),
+    format("( "),
+    maplist([X]>>format("~p ", [X]), Xs),
+    format(")"),
+    flush_output(user_output).
 
 
-:- multifile group_element/2.
-group_element(s(N), perm:E) :-
+
+groups:group_element(s(N), E) :- !, group_element_(E, N).
+group_element_(perm:E, N) :-
     phrase(indices(N), Indices),
     phrase(permutation(Indices), E).
 
-:- multifile group_identity/2.
-group_identity(s(N), perm:Is) :-
+groups:group_identity(s(N), I) :- !, group_identity_(I, N).
+group_identity_(perm:Is, N) :-
     phrase(indices(N), Is).
 
-:- multifile group_inverse/3.
-group_inverse(s(N), perm:X0, perm:X) :-
-    group_element(s(N), perm:X0),
-    reverse(X0, X).
+groups:group_inverse(s(N), X0, X) :- !, group_inverse_(X0, X, N).
+group_inverse_(perm:X0, perm:X, N) :-
+    freeze(X0, group_element_(perm:X0, N)),
+    phrase(indices(N), Is),
+    maplist([A, I, A-I]>>true, X0, Is, XsIs),
+    keysort(XsIs, XsIsSorted),
+    maplist([A-I, I]>>true, XsIsSorted, X).
 
-:- multifile group_operation/4.
 % P1 P2 x = P1 (P2 x)
-group_operation(s(N), A, B, perm:ABI) :-
+groups:group_operator(s(N), A, B, C) :- !, group_operator_(A, B, C, N).
+group_operator_(A, B, perm:ABI, N) :-
+    freeze(A, group_element_(A, N)),
+    freeze(B, group_element_(B, N)),
+    freeze(ABI, group_element_(perm:ABI, N)),
     phrase(indices(N), I),
     maplist(permutation_from_to(B), I, BI),
     maplist(permutation_from_to(A), BI, ABI).
@@ -125,12 +154,6 @@ cycle_composition_factorization([C|Cs]) -->
     cycle_factorization(C),
     cycle_composition_factorization(Cs).
 
-
-portray(cycle:Xs) :-
-    is_list(Xs),
-    format("( "),
-    maplist([X]>>format("~p ", [X]), Xs),
-    format(")").
 
 
 %simplify_transposition_product([]) --> [].

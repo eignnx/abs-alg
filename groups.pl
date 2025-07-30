@@ -8,6 +8,12 @@
     group_element_power/4
 ]).
 
+:- multifile group_title/2.
+:- multifile group_element/2.
+:- multifile group_identity/2.
+:- multifile group_inverse/3.
+:- multifile group_operator/4.
+
 :- use_module(library(clpfd)).
 
 :- op(300, xfy, x).
@@ -85,6 +91,15 @@ group_operator(G, A, B, C) :-
 
 
 group_element_power(G, A, K, B) :-
+    zcompare(Ord, K, 0),
+    ord_group_element_power(Ord, G, A, K, B).
+ord_group_element_power(=, G, _, _, B) :-
+    group_identity(G, B).
+ord_group_element_power(<, G, A, K, B) :-
+    group_inverse(G, A, AInv),
+    AbsK #= abs(K),
+    ord_group_element_power(>, G, AInv, AbsK, B).
+ord_group_element_power(>, G, A, K, B) :-
     length(As, K),
     maplist(=(A), As),
     group_identity(G, E),
@@ -106,5 +121,8 @@ expr_group_eval(i(X0), G, Y) :-
 expr_group_eval(e, G, Ident) :-
     !,
     group_identity(G, Ident).
+expr_group_eval(X^N, G, Y) :-
+    !,
+    group_element_power(G, X, N, Y).
 expr_group_eval(X, G, X) :-
     group_element(G, X).
