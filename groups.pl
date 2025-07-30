@@ -18,10 +18,6 @@
 
 :- op(300, xfy, x).
 
-group_title((z(N), +), Title) :-
-    format(string(Title), "the integers mod ~d under addition", [N]).
-group_title((z(N), *), Title) :-
-    format(string(Title), "the integers mod ~d under multiplication", [N]).
 group_title((A x B, Op), Title) :-
     group_title((A, Op), ATitle),
     group_title((B, Op), BTitle),
@@ -30,13 +26,6 @@ group_title(G, Title) :-
     G = group{member:M, ident:E, inv:Inv, op:Op},
     format(string(Title), "the set defined by ~p under ~p with identity ~p and inverse ~p", [M, Op, E, Inv]).
 
-group_element(z(N), A) :- group_element((z(N), +), A).
-group_element((z(N), +), A) :- 
-    Hi is N - 1,
-    A in 0..Hi.
-group_element((z(N), *), A) :- 
-    Hi is N - 1,
-    A in 1..Hi.
 group_element((G x H, Op), Gx-Hx) :-
     group_element((G, Op), Gx),
     group_element((H, Op), Hx).
@@ -44,13 +33,6 @@ group_element(group{member:Member, ident:_E, inv:_Inv, op:_Op}, A) :-
     call(Member, A).
 
 
-group_inverse(z(N), A, AInv) :- group_inverse((z(N), +), A, AInv).
-group_inverse((z(N), +), A, AInv) :-
-    maplist(group_element((z(N), +)), [A, AInv]),
-    AInv #= (N - A) mod N.
-group_inverse((z(N), *), A, AInv) :-
-    maplist(group_element((z(N), +)), [A, AInv]),
-    (AInv * A) mod N #= 1.
 group_inverse((G x H, Op), Gx-Hx, GxInv-HxInv) :-
     group_inverse((G, Op), Gx, GxInv),
     group_inverse((H, Op), Hx, HxInv).
@@ -58,9 +40,6 @@ group_inverse(group{member:_M, ident:_E, inv:Inv, op:_Op}, A, AInv) :-
     call(Inv, A, AInv).
 
 
-group_identity(z(_), I) :- group_identity((z(_), +), I).
-group_identity((z(_), +), 0).
-group_identity((z(_), *), 1).
 group_identity((G x H, Op), Gi-Hi) :-
     group_identity((G, Op), Gi),
     group_identity((H, Op), Hi).
@@ -73,13 +52,6 @@ group_slice(G, [A | As]) :-
     group_slice(G, As).
 
 
-group_operator(z(N), A, B, C) :- group_operator((z(N), +), A, B, C).
-group_operator((z(N), +), A, B, C) :-
-    maplist(group_element((z(N), +)), [A, B, C]),
-    C #= (A + B) mod N.
-group_operator((z(N), *), A, B, C) :-
-    maplist(group_element((z(N), *)), [A, B, C]),
-    C #= (A * B) mod N.
 group_operator((G x H, Op), Gx-Hx, Gy-Hy, Gz-Hz) :-
     group_slice((G, Op), [Gx, Gy, Gz]),
     group_slice((H, Op), [Hx, Hy, Hz]),
