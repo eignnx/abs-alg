@@ -16,33 +16,18 @@
 
 :- use_module(library(clpfd)).
 
-:- op(300, xfy, x).
-
-group_title((A x B, Op), Title) :-
-    group_title((A, Op), ATitle),
-    group_title((B, Op), BTitle),
-    format(string(Title), "~s  x  ~s", [ATitle, BTitle]).
 group_title(G, Title) :-
     G = group{member:M, ident:E, inv:Inv, op:Op},
     format(string(Title), "the set defined by ~p under ~p with identity ~p and inverse ~p", [M, Op, E, Inv]).
 
-group_element((G x H, Op), Gx-Hx) :-
-    group_element((G, Op), Gx),
-    group_element((H, Op), Hx).
 group_element(group{member:Member, ident:_E, inv:_Inv, op:_Op}, A) :-
     call(Member, A).
 
 
-group_inverse((G x H, Op), Gx-Hx, GxInv-HxInv) :-
-    group_inverse((G, Op), Gx, GxInv),
-    group_inverse((H, Op), Hx, HxInv).
 group_inverse(group{member:_M, ident:_E, inv:Inv, op:_Op}, A, AInv) :-
     call(Inv, A, AInv).
 
 
-group_identity((G x H, Op), Gi-Hi) :-
-    group_identity((G, Op), Gi),
-    group_identity((H, Op), Hi).
 group_identity(group{member:_M, ident:E, inv:_Inv, op:_Op}, E).
 
 
@@ -52,11 +37,6 @@ group_slice(G, [A | As]) :-
     group_slice(G, As).
 
 
-group_operator((G x H, Op), Gx-Hx, Gy-Hy, Gz-Hz) :-
-    group_slice((G, Op), [Gx, Gy, Gz]),
-    group_slice((H, Op), [Hx, Hy, Hz]),
-    group_operator((G, Op), Gx, Gy, Gz),
-    group_operator((H, Op), Hx, Hy, Hz).
 group_operator(G, A, B, C) :-
     G = group{member:_M, ident:_E, inv:_Inv, op:Op},
     call(Op, A, B, C).

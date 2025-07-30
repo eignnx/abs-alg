@@ -1,4 +1,4 @@
-:- module(permute, [
+:- module(zn, [
     group_title/2,
     group_element/2,
     group_identity/2,
