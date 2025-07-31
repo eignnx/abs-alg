@@ -1,0 +1,45 @@
+body {
+    background-color: #333;
+    color: white;
+    font-family: sans-serif;
+}
+
+table {
+    border-collapse: collapse;
+    border: 2px solid white;
+    margin: auto;
+}
+
+th,
+td {
+  border: 1px solid white;
+  padding: 8px 10px;
+  text-align: center;
+  aspect-ratio: 1 / 1;
+  padding: 0.5ch;
+}
+
+th {
+    background-color: rgb(255 255 255 / 0.2);
+    border: 2px solid white;
+    font-weight: bold;
+}
+
+td {
+    color: white;
+    font-weight: bold;
+}
+
+td::selection {
+    background-color: rgb(255 255 255 / 0.3);
+}
+
+caption {
+  caption-side: bottom;
+  padding: 10px;
+  font-weight: bold;
+}
+
+caption:first-letter {
+  text-transform: capitalize;
+}

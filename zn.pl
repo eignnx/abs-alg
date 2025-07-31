@@ -9,6 +9,8 @@
 :- use_module(library(clpfd)).
 :- use_module(groups).
 
+groups:group_title(z(N), Title) :-
+    groups:group_title((z(N), +), Title).
 groups:group_title((z(N), +), Title) :-
     format(string(Title), "the integers mod ~d under addition", [N]).
 groups:group_title((z(N), *), Title) :-

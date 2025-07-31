@@ -34,14 +34,14 @@ user:portray(perm:[X|Xs]) :-
     format("~p", [X]),
     maplist([X]>>format(" ~p", [X]), Xs),
     format("⎠"),
-    flush_output(user_output).
+    flush_output(current_output).
 
 user:portray(cycle:Xs) :-
     is_list(Xs),
     format("( "),
     maplist([X]>>format("~p ", [X]), Xs),
     format(")"),
-    flush_output(user_output).
+    flush_output(current_output).
 
 
 
@@ -56,7 +56,7 @@ group_identity_(perm:Is, N) :-
 
 groups:group_inverse(s(N), X0, X) :- !, group_inverse_(X0, X, N).
 group_inverse_(perm:X0, perm:X, N) :-
-    freeze(X0, group_element_(perm:X0, N)),
+    %freeze(X0, group_element_(perm:X0, N)),
     phrase(indices(N), Is),
     maplist([A, I, A-I]>>true, X0, Is, XsIs),
     keysort(XsIs, XsIsSorted),
@@ -65,20 +65,20 @@ group_inverse_(perm:X0, perm:X, N) :-
 % P1 P2 x = P1 (P2 x)
 groups:group_operator(s(N), A, B, C) :- !, group_operator_(A, B, C, N).
 group_operator_(A, B, perm:ABI, N) :-
-    freeze(A, group_element_(A, N)),
-    freeze(B, group_element_(B, N)),
-    freeze(ABI, group_element_(perm:ABI, N)),
+    %freeze(A, group_element_(A, N)),
+    %freeze(B, group_element_(B, N)),
+    %freeze(ABI, group_element_(perm:ABI, N)),
     phrase(indices(N), I),
     maplist(permutation_from_to(B), I, BI),
     maplist(permutation_from_to(A), BI, ABI).
 
 
-indices(N) --> { zcompare(Ord, N, 0) }, indices_dispatch(Ord, N).
+indices(N) --> { N in 0..sup, zcompare(Ord, N, 0) }, indices_dispatch(Ord, N).
 indices_dispatch(=, _) --> [].
 indices_dispatch(>, N) --> { M #= N - 1 }, indices(M), [N].
 
 permutation([]) --> [].
-permutation(ABs) --> { select(A, ABs, Bs) }, [A], permutation(Bs).
+permutation(ABs) --> [A], { select(A, ABs, Bs) }, permutation(Bs).
 
 permutation_from_to(perm:P, From, To) :- nth1(From, P, To).
 
