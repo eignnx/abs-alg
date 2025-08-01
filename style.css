@@ -7,6 +7,7 @@ body {
 table {
     border-collapse: collapse;
     border: 2px solid white;
+    /* margin-inline: auto; */
     margin: auto;
 }
 
@@ -42,4 +43,9 @@ caption {
 
 caption:first-letter {
   text-transform: capitalize;
+}
+
+#container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }

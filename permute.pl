@@ -25,8 +25,8 @@ groups:group_title(s(N), Title) :-
 
 user:portray(perm:[X|Xs]) :-
     length([X|Xs], N),
-    format("~n⎛"),
     phrase(indices(N), [I|Is]),
+    format("~n⎛"),
     format("~p", [I]),
     maplist([X]>>format(" ~p", [X]), Is),
     format("⎞~n"),

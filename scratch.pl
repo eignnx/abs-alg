@@ -56,19 +56,42 @@ page(Group, Table, Pairs) -->
             tag(link, [href=`style.css`, rel=`stylesheet`], [])
         ]),
         tag(body, [
-            tag(table, [
-                tag(caption, [string(GroupTitle)]),
-                tag(thead, [
-                    tr([
-                        th([`⋅`]), % For row headers below
-                        header_columns(Pairs)
+
+            tag(section, [id=`container`], [
+                tag(table, [
+                    tag(caption, [`Legend`]),
+                    tag(thead, [
+                        tr([
+                            th([`Abbreviation`]),
+                            th([`Element`])
+                        ])
+                    ]),
+                    tag(tbody, [
+                        sequence(legend_row, Pairs)
                     ])
                 ]),
-                tag(tbody, [
-                    table_body(Table, Pairs)
+
+
+                tag(table, [
+                    tag(caption, [string(GroupTitle)]),
+                    tag(thead, [
+                        tr([
+                            th([`⋅`]), % For row headers below
+                            header_columns(Pairs)
+                        ])
+                    ]),
+                    tag(tbody, [
+                        table_body(Table, Pairs)
+                    ])
                 ])
             ])
         ])
+    ]).
+
+legend_row(Idx-Val) -->
+    tr([
+        tag(th, [scope=`row`], [idx_repr(Idx)]),
+        td([tag(pre, [portray(Val)])])
     ]).
 
 header_columns(Pairs) -->
@@ -79,22 +102,22 @@ column_header(Idx-Val) -->
     tag(th, [title=portray(Val)], [idx_repr(Idx)]).
 
 table_body(Table, Pairs) -->
-    sequence(body_row(Table, Pairs), Pairs).
+    { length(Pairs, Order) },
+    sequence(body_row(Table, Pairs, Order), Pairs).
 
-body_row(Table, Pairs, Idx-Val) -->
+body_row(Table, Pairs, Order, Idx-Val) -->
     tr([
         row_header(Idx, Val),
-        sequence(table_cell(Table, Pairs, Idx-Val), Pairs)
+        sequence(table_cell(Table, Order, Idx-Val), Pairs)
     ]).
 
 :- det(row_header//2).
 row_header(Idx, Val) -->
     tag(th, [scope=`row`, title=portray(Val)], [idx_repr(Idx)]).
-    
+
 :- det(table_cell//4).
-table_cell(Table, Pairs, RowIdx-_RowVal, ColIdx-_ColVal) -->
+table_cell(Table, Order, RowIdx-_RowVal, ColIdx-_ColVal) -->
     { memberchk((RowIdx-_)*(ColIdx-_)=(ResultIdx-Result), Table) },
-    { length(Pairs, Order) },
     { Hue is 360 * 9/10 * (ResultIdx - 1) / Order + 180 },
     { format(codes(Style), "background-color: oklch(0.6888 0.1629 ~p);", [Hue]) },
     tag(td, [
@@ -141,10 +164,14 @@ bijective_numeral(N) -->
     bijective_numeral_(Ord, N).
 bijective_numeral_(=, 0) --> [].
 bijective_numeral_(>, N) -->
-    { LetterIndex is (N - 1) mod 26 },
-    { nth0(LetterIndex, `ABCDEFGHIJKLMNOPQRSTUVWXYZ`, Letter) },
-    [Letter],
-    { Next is (N - 1) div 26 },
-    bijective_numeral(Next).
+    { alphabet(greek, Alphabet, Base) },
+    { LetterIndex is (N - 1) mod Base },
+    { nth0(LetterIndex, Alphabet, Letter) },
+    { Next is (N - 1) div Base },
+    bijective_numeral(Next),
+    [Letter].
 bijective_numeral_(<, N) -->
     { throw(error(type_error(bijective_numeral_expected_positive(N)), _)) }.
+
+alphabet(latin, `ABCDEFGHIJKLMNOPQRSTUVWXYZ`, 26).
+alphabet(greek, `ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ`, 24).
