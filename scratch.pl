@@ -4,36 +4,48 @@
 :- encoding(utf8).
 
 :- use_module(library(clpfd)).
+:- use_module(library(rbtrees)).
 
 :- use_module(groups).
 :- use_module(permute).
 :- use_module(zn).
 :- use_module(product).
 
-caley(Group, Pairs, Ax-A, Bx-B, Cx-C) :-
-    member(Ax-A, Pairs),
-    member(Bx-B, Pairs),
+caley(Group, RbElementsIndices, Ax-A, Bx-B, Cx-C) :-
+    rb_in(A, Ax, RbElementsIndices),
+    rb_in(B, Bx, RbElementsIndices),
     group_operator(Group, A, B, C),
-    member(Cx-C, Pairs),
-    format("#~p * #~p = #~p~n", [Ax, Bx, Cx]).
+    rb_lookup(C, Cx, RbElementsIndices).
 
 main(Group) :-
+    format("Collecting group elements...~n"),
     setof(X, (
         group_element(Group, X),
         (var(X) -> label([X]) ; true)
     ), Elements),
-    maplist([X]>>format("~p~n", [X]), Elements),
-    format("~`-t~40|~n"),
+    format("Collected "),
     length(Elements, N),
+    format("~d elements.~n", [N]),
     phrase(permute:indices(N), Is),
+
+    format("Building index mappings...~n"),
     pairs_keys_values(Pairs, Is, Elements),
+    pairs_keys_values(ElementsIndices, Elements, Is),
+    list_to_rbtree(ElementsIndices, RbElementsIndices),
+    format("Built.~n"),
 
+    format("Building Cayley table...~n"),
     bagof(
-        (Ax-A)*(Bx-B)=(Cx-C),
-        caley(Group, Pairs, Ax-A, Bx-B, Cx-C),
-        Table
+        (Ax*Bx)-(A*B=Cx-C),
+        caley(Group, RbElementsIndices, Ax-A, Bx-B, Cx-C),
+        TableAsList
     ),
+    format("Built.~n"),
+    format("Converting table to search tree...~n"),
+    list_to_rbtree(TableAsList, Table),
+    format("Converted.~n"),
 
+    format("Opening output file...~n"),
     setup_call_cleanup(
         open('table.html', write, Stream, [encoding(utf8)]),
         (
@@ -46,7 +58,8 @@ main(Group) :-
             format("Closing stream...~n"),
             close(Stream)
         )
-    ).
+    ),
+    format("Finished.~n").
 
 page(Group, Table, Pairs) -->
     { group_title(Group, GroupTitleStr), string_codes(GroupTitleStr, GroupTitle) },
@@ -58,6 +71,8 @@ page(Group, Table, Pairs) -->
         tag(body, [
 
             tag(section, [id=`container`], [
+
+                { format("Rendering legend...~n") },
                 tag(table, [
                     tag(caption, [`Legend`]),
                     tag(thead, [
@@ -71,7 +86,7 @@ page(Group, Table, Pairs) -->
                     ])
                 ]),
 
-
+                { format("Rendering Cayley table...~n") },
                 tag(table, [
                     tag(caption, [string(GroupTitle)]),
                     tag(thead, [
@@ -106,6 +121,7 @@ table_body(Table, Pairs) -->
     sequence(body_row(Table, Pairs, Order), Pairs).
 
 body_row(Table, Pairs, Order, Idx-Val) -->
+    { format('Rendering row ~d of ~d...~n', [Idx, Order]) },
     tr([
         row_header(Idx, Val),
         sequence(table_cell(Table, Order, Idx-Val), Pairs)
@@ -117,7 +133,7 @@ row_header(Idx, Val) -->
 
 :- det(table_cell//4).
 table_cell(Table, Order, RowIdx-_RowVal, ColIdx-_ColVal) -->
-    { memberchk((RowIdx-_)*(ColIdx-_)=(ResultIdx-Result), Table) },
+    { rb_lookup((RowIdx*ColIdx), _*_=(ResultIdx-Result), Table) },
     { Hue is 360 * 9/10 * (ResultIdx - 1) / Order + 180 },
     { format(codes(Style), "background-color: oklch(0.6888 0.1629 ~p);", [Hue]) },
     tag(td, [

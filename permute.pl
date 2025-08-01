@@ -3,7 +3,8 @@
     group_element/2,
     group_identity/2,
     group_inverse/3,
-    group_operator/4
+    group_operator/4,
+    render//1
 ]).
 
 :- encoding(utf8).
@@ -23,18 +24,18 @@ is_permutation(perm:Xs) :-
 groups:group_title(s(N), Title) :-
     format(string(Title), "the symmetric group on sets of ~d elements", [N]).
 
-user:portray(perm:[X|Xs]) :-
-    length([X|Xs], N),
-    phrase(indices(N), [I|Is]),
-    format("~n⎛"),
-    format("~p", [I]),
-    maplist([X]>>format(" ~p", [X]), Is),
-    format("⎞~n"),
-    format("⎝"),
-    format("~p", [X]),
-    maplist([X]>>format(" ~p", [X]), Xs),
-    format("⎠"),
+user:portray(perm:Xs) :-
+    phrase(render(perm:Xs), Codes),
+    format(current_output, "~s", [Codes]),
     flush_output(current_output).
+
+:- use_module(library(dcg/basics)).
+:- use_module(library(dcg/high_order)).
+render(perm:Xs) -->
+    { length(Xs, N) },
+    { phrase(indices(N), Is) },
+    `⎛`, sequence(integer, ` `, Is), `⎞\n`,
+    `⎝`, sequence(integer, ` `, Xs), `⎠`.
 
 user:portray(cycle:Xs) :-
     is_list(Xs),
