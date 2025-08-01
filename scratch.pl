@@ -9,6 +9,7 @@
 :- use_module(groups).
 :- use_module(permute).
 :- use_module(zn).
+:- use_module(matrix).
 :- use_module(product).
 :- use_module(utils).
 
@@ -21,8 +22,7 @@ caley(Group, RbElementsIndices, Ax-A, Bx-B, Cx-C) :-
 main(Group) :-
     format("Collecting group elements...~n"),
     setof(X, (
-        group_element(Group, X),
-        (var(X) -> label([X]) ; true)
+        group_element(Group, X) inst X
     ), Elements),
     format("Collected "),
     length(Elements, N),

@@ -23,7 +23,7 @@
 :- use_module(utils).
 
 groups:group_title(gl(N, z(P)), Title) :-
-    format(string(Title), "the group of invertible ~dx~d matrices over the field Z_~d", [N, P]).
+    format(string(Title), "the group of invertible ~dx~d matrices over the field Z_~d", [N, N, P]).
 
 groups:group_element(gl(2, Field), M) :-
     Field = z(P), prime(P), !,
