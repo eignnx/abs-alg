@@ -9,6 +9,7 @@
 ]).
 :- use_module(library(clpfd)).
 :- use_module(library(reif)).
+:- use_module(utils).
 
 group_generator_elements(G, Gen, [Gen|Els]) :-
     group_element(G, Gen),
@@ -23,16 +24,6 @@ group_ident_generator_accumulator_elements_(G, Ident, Gen, Acc0, Els) :-
             Els = [Acc|Els0],
             group_ident_generator_accumulator_elements_(G, Ident, Gen, Acc, Els0)
         )
-    ).
-
-:- op(50, xfy, inst).
-
-Goal inst X :-
-    call(Goal),
-    ( var(X) ->
-        catch(label([X]), _, true)
-    ;
-        term_variables(X, Vs), label(Vs)
     ).
 
 

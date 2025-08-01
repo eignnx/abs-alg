@@ -10,6 +10,7 @@
 :- use_module(permute).
 :- use_module(zn).
 :- use_module(product).
+:- use_module(utils).
 
 caley(Group, RbElementsIndices, Ax-A, Bx-B, Cx-C) :-
     rb_in(A, Ax, RbElementsIndices),
@@ -144,50 +145,3 @@ table_cell(Table, Order, RowIdx-_RowVal, ColIdx-_ColVal) -->
 idx_repr(N) --> bijective_numeral(N).
 %idx_repr(N) --> number(N).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-portray(X) -->
-    { format(codes(Codes), "~p", [X]) }, 
-    Codes.
-
-html(Nodes) -->
-    `<html>`,
-    sequence(callit, Nodes),
-    `</html>`.
-
-callit(Goal) --> Goal.
-
-tag(Tag, Children) -->
-    `<`, atom(Tag), `>`,
-        sequence(callit, Children),
-    `</`, atom(Tag), `>`.
-tag(Tag, Attrs, Children) -->
-    `<`, atom(Tag), ` `,
-        sequence(attr, ` `, Attrs),
-    `>`,
-        sequence(callit, Children),
-    `</`, atom(Tag), `>`.
-
-attr(Key=Value) --> atom(Key), `="`, Value, `"`.
-
-tr(Children) --> tag(tr, Children).
-td(Children) --> tag(td, Children).
-th(Children) --> tag(th, Children).
-
-
-bijective_numeral(N) -->
-    { zcompare(Ord, N, 0) },
-    bijective_numeral_(Ord, N).
-bijective_numeral_(=, 0) --> [].
-bijective_numeral_(>, N) -->
-    { alphabet(greek, Alphabet, Base) },
-    { LetterIndex is (N - 1) mod Base },
-    { nth0(LetterIndex, Alphabet, Letter) },
-    { Next is (N - 1) div Base },
-    bijective_numeral(Next),
-    [Letter].
-bijective_numeral_(<, N) -->
-    { throw(error(type_error(bijective_numeral_expected_positive(N)), _)) }.
-
-alphabet(latin, `ABCDEFGHIJKLMNOPQRSTUVWXYZ`, 26).
-alphabet(greek, `ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ`, 24).
