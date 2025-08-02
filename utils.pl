@@ -9,7 +9,11 @@
     tr//1,
     td//1,
     th//1,
-    bijective_numeral//1
+    bijective_numeral//1,
+    indexed_maplist/2,
+    format_//2,
+    format_//1,
+    puts/1
 ]).
 
 :- encoding(utf8).
@@ -29,7 +33,8 @@ Goal inst X :-
     ).
 
 prime(N) :-
-    length([_, _ | _], N),
+    N in 2..sup,
+    label([N]), %length([_, _ | _], N),
     nth_integer_root_and_remainder(2, N, M, _),
     \+ (
         between(2, M, I),
@@ -81,3 +86,22 @@ bijective_numeral_(<, N) -->
 
 alphabet(latin, `ABCDEFGHIJKLMNOPQRSTUVWXYZ`, 26).
 alphabet(greek, `ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ`, 24).
+
+
+:- meta_predicate indexed_maplist(1, +).
+indexed_maplist(Pred, Xs) :-
+    indexed_maplist_(Xs, 0, Pred).
+indexed_maplist_([], _, _Pred).
+indexed_maplist_([X|Xs], Idx0, Pred) :-
+    call(Pred, Idx0, X),
+    Idx #= Idx0 + 1,
+    indexed_maplist_(Xs, Idx, Pred).
+
+
+format_(FmtString, Args) -->
+    { format(codes(Codes), FmtString, Args) },
+    Codes.
+
+format_(FmtString) --> format_(FmtString, []).
+
+puts(Codes) :- format("~s~n", [Codes]).

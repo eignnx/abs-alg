@@ -85,15 +85,6 @@ ident_row(N, J, Row) :-
     ).
 
 
-indexed_maplist(Pred, Xs) :-
-    indexed_maplist_(Xs, 0, Pred).
-indexed_maplist_([], _, _Pred).
-indexed_maplist_([X|Xs], Idx0, Pred) :-
-    call(Pred, Idx0, X),
-    Idx #= Idx0 + 1,
-    indexed_maplist_(Xs, Idx, Pred).
-
-
 m_nxn(Matrix, N) :-
     (var(Matrix) -> true ; functor(Matrix, m, N) ),
     length(Rows, N),

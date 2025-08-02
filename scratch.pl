@@ -136,11 +136,11 @@ row_header(Idx, Val) -->
 table_cell(Table, Order, RowIdx-_RowVal, ColIdx-_ColVal) -->
     { rb_lookup((RowIdx*ColIdx), _*_=(ResultIdx-Result), Table) },
     { Hue is 360 * 9/10 * (ResultIdx - 1) / Order + 180 },
-    { format(codes(Style), "background-color: oklch(0.6888 0.1629 ~p);", [Hue]) },
+    { format(codes(Style), "background-color: oklch(0.7715 0.1241 ~p);", [Hue]) },
     tag(td, [
         title=portray(Result),
         style=Style
-    ], [idx_repr(ResultIdx)]).
+    ], [ idx_repr(ResultIdx) ]).
 
 idx_repr(N) --> bijective_numeral(N).
 %idx_repr(N) --> number(N).
