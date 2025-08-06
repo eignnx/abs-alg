@@ -13,7 +13,8 @@
     indexed_maplist/2,
     format_//2,
     format_//1,
-    puts/1
+    puts/1,
+    text_lines/2
 ]).
 
 :- encoding(utf8).
@@ -46,6 +47,7 @@ portray(X) -->
     Codes.
 
 html(Nodes) -->
+    `<!DOCTYPE html>\n`,
     `<html>`,
     sequence(callit, Nodes),
     `</html>`.
@@ -63,7 +65,8 @@ tag(Tag, Attrs, Children) -->
         sequence(callit, Children),
     `</`, atom(Tag), `>`.
 
-attr(Key=Value) --> atom(Key), `="`, Value, `"`.
+attr(Key=Value) --> !, atom(Key), `="`, Value, `"`.
+attr(Key) --> { atom(Key) }, !, atom(Key).
 
 tr(Children) --> tag(tr, Children).
 td(Children) --> tag(td, Children).
@@ -105,3 +108,13 @@ format_(FmtString, Args) -->
 format_(FmtString) --> format_(FmtString, []).
 
 puts(Codes) :- format("~s~n", [Codes]).
+
+text_lines(Text, Lines) :-
+    text_lines_(Text, [], Lines).
+text_lines_([], Line, [Line]) :- !.
+text_lines_([0'\n|Rest], Line, [Line|Lines]) :- !,
+    text_lines_(Rest, [], Lines).
+text_lines_([Char|Rest], Line0, Lines) :-
+    append(Line0, [Char], Line),
+    text_lines_(Rest, Line, Lines).
+

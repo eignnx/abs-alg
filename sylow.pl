@@ -80,7 +80,6 @@ describe_p_subgroup(count(subgroup_order(I)) in [N|Ns]) -->
     format_(" order-~d subgroups~n", [I]).
 
 
-:- meta_predicate english_sequence(3, +).
 english_sequence(_Coord, Nt, _Conj, [Item]) --> !, call(Nt, Item).
 english_sequence(``, Nt, Conj, Items) --> !,
     english_sequence_(Items, Nt, Conj).

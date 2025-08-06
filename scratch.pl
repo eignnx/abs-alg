@@ -11,6 +11,8 @@
 :- use_module(zn).
 :- use_module(matrix).
 :- use_module(product).
+:- use_module(cycle_graph).
+:- use_module(sylow).
 :- use_module(utils).
 
 caley(Group, RbElementsIndices, Ax-A, Bx-B, Cx-C) :-
@@ -21,9 +23,10 @@ caley(Group, RbElementsIndices, Ax-A, Bx-B, Cx-C) :-
 
 main(Group) :-
     format("Collecting group elements...~n"),
-    setof(X, (
-        group_element(Group, X) inst X
-    ), Elements),
+    phrase(cayley_table_ordering(Group), Elements),
+    %setof(X, (
+    %    group_element(Group, X) inst X
+    %), Elements),
     format("Collected "),
     length(Elements, N),
     format("~d elements.~n", [N]),
@@ -63,13 +66,27 @@ main(Group) :-
     format("Finished.~n").
 
 page(Group, Table, Pairs) -->
+    { format("Finding cycles...~n") },
+    { group_cycles(Group, Cycles) },
+    { format("Found.~n") },
+    { length(Pairs, Order) },
     { group_title(Group, GroupTitleStr), string_codes(GroupTitleStr, GroupTitle) },
     html([
         tag(head, [
             tag(meta, [charset=`UTF-8`], []),
-            tag(link, [href=`style.css`, rel=`stylesheet`], [])
+            tag(link, [href=`style.css`, rel=`stylesheet`], []),
+            tag(script, [src=`script.js`, defer], [])
         ]),
+
         tag(body, [
+            tag(section, [
+                { phrase(sylow(Order), Text) },
+                { text_lines(Text, Lines) },
+                sequence([Line]>>tag(p, [Line]), Lines)
+            ]),
+            tag(section, [
+                sequence(render_cycle(Pairs), Cycles)
+            ]),
 
             tag(section, [id=`container`], [
 
@@ -104,10 +121,29 @@ page(Group, Table, Pairs) -->
         ])
     ]).
 
+render_cycle(Pairs, Cycle) -->
+    tag(div, [class=`cycle`], [
+        tag(label, [
+            tag(input, [type=`checkbox`], []),
+            `{`, sequence(render_cycle_element(Pairs), `, `, Cycle), `}`,
+            { length(Cycle, CycleLen) },
+            tag(span, [` size `, portray(CycleLen)])
+        ])
+    ]).
+
+render_cycle_element(Pairs, Element) -->
+    { memberchk(Index-Element, Pairs) },
+    tag(data, [
+        class=`element-portrayal`,
+        title=portray(Element),
+        value=portray(Index)
+    ], [idx_repr(Index)]).
+    %tag(pre, [class=`element-portrayal`], [portray(Element)]).
+
 legend_row(Idx-Val) -->
     tr([
         tag(th, [scope=`row`], [idx_repr(Idx)]),
-        td([tag(pre, [portray(Val)])])
+        td([tag(pre, [class=`element-portrayal`], [portray(Val)])])
     ]).
 
 header_columns(Pairs) -->
@@ -140,7 +176,9 @@ table_cell(Table, Order, RowIdx-_RowVal, ColIdx-_ColVal) -->
     tag(td, [
         title=portray(Result),
         style=Style
-    ], [ idx_repr(ResultIdx) ]).
+    ], [
+        tag(data, [value=portray(ResultIdx)], [idx_repr(ResultIdx)])
+    ]).
 
 idx_repr(N) --> bijective_numeral(N).
 %idx_repr(N) --> number(N).
